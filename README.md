@@ -21,7 +21,7 @@ Add `gpui-canvas` and `gpui` to your `Cargo.toml`:
 ```toml
 [dependencies]
 gpui = { git = "https://github.com/zed-industries/zed" }
-gpui-canvas = { git = "https://github.com/ceghap/gpui-canvas-" }
+gpui-canvas = { git = "https://github.com/ceghap/gpui-canvas" }
 ```
 
 ## Quick Start

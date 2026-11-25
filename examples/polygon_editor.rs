@@ -2,24 +2,24 @@ use gpui::{
     div, prelude::*, px, rgb, size, App, Bounds, Context, Entity, Render, Window, WindowBounds,
     WindowOptions,
 };
-use gpui_canvas::{CanvasMode, InteractiveCanvas};
+use gpui_canvas::{CanvasMode, InteractiveCanvas, Point2D};
 use gpui_platform::application;
 
-struct ThreatZoneApp {
+struct PolygonEditorApp {
     canvas: Entity<InteractiveCanvas>,
 }
 
-impl ThreatZoneApp {
+impl PolygonEditorApp {
     fn new(cx: &mut Context<Self>) -> Self {
         let canvas = cx.new(|_cx| {
             let mut c = InteractiveCanvas::new();
-            // Pre-seed an example perimeter zone
-            let z_idx = c.begin_new_zone("Night Curfew Zone", 0xef4444);
+            // Pre-seed an initial sample polygon
+            let z_idx = c.begin_new_zone("Region A", 0xef4444);
             if let Some(zone) = c.zones.get_mut(z_idx) {
-                zone.points.push(gpui_canvas::Point2D::new(0.15, 0.20));
-                zone.points.push(gpui_canvas::Point2D::new(0.85, 0.20));
-                zone.points.push(gpui_canvas::Point2D::new(0.75, 0.80));
-                zone.points.push(gpui_canvas::Point2D::new(0.25, 0.80));
+                zone.points.push(Point2D::new(0.15, 0.20));
+                zone.points.push(Point2D::new(0.85, 0.20));
+                zone.points.push(Point2D::new(0.75, 0.80));
+                zone.points.push(Point2D::new(0.25, 0.80));
                 zone.is_closed = true;
             }
             c.mode = CanvasMode::Select;
@@ -30,7 +30,7 @@ impl ThreatZoneApp {
     }
 }
 
-impl Render for ThreatZoneApp {
+impl Render for PolygonEditorApp {
     fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let canvas = self.canvas.clone();
         let (mode, zone_count) = {
@@ -75,7 +75,7 @@ impl Render for ThreatZoneApp {
                                     .rounded_md()
                                     .bg(rgb(0x1e293b))
                                     .text_color(rgb(0x94a3b8))
-                                    .child(format!("{} Zones Defined", zone_count)),
+                                    .child(format!("{} Polygons", zone_count)),
                             ),
                     )
                     .child(
@@ -83,7 +83,7 @@ impl Render for ThreatZoneApp {
                             .flex()
                             .items_center()
                             .gap_2()
-                            // Button: Add Red Breach Zone
+                            // Button: Add Red Polygon
                             .child(
                                 div()
                                     .px_3()
@@ -94,14 +94,14 @@ impl Render for ThreatZoneApp {
                                     .text_xs()
                                     .font_weight(gpui::FontWeight::SEMIBOLD)
                                     .cursor_pointer()
-                                    .child("+ Red Curfew Zone")
+                                    .child("+ Red Polygon")
                                     .on_mouse_down(
                                         gpui::MouseButton::Left,
                                         cx.listener({
                                             let canvas = canvas.clone();
                                             move |_this, _, _, cx| {
                                                 canvas.update(cx, |c, cx| {
-                                                    c.begin_new_zone("Curfew Breach Zone", 0xef4444);
+                                                    c.begin_new_zone("Region (Red)", 0xef4444);
                                                     cx.notify();
                                                 });
                                                 cx.notify();
@@ -109,7 +109,7 @@ impl Render for ThreatZoneApp {
                                         }),
                                     ),
                             )
-                            // Button: Add Green Safe Zone
+                            // Button: Add Green Polygon
                             .child(
                                 div()
                                     .px_3()
@@ -120,14 +120,14 @@ impl Render for ThreatZoneApp {
                                     .text_xs()
                                     .font_weight(gpui::FontWeight::SEMIBOLD)
                                     .cursor_pointer()
-                                    .child("+ Green Safe Zone")
+                                    .child("+ Green Polygon")
                                     .on_mouse_down(
                                         gpui::MouseButton::Left,
                                         cx.listener({
                                             let canvas = canvas.clone();
                                             move |_this, _, _, cx| {
                                                 canvas.update(cx, |c, cx| {
-                                                    c.begin_new_zone("Safe Movement Zone", 0x10b981);
+                                                    c.begin_new_zone("Region (Green)", 0x10b981);
                                                     cx.notify();
                                                 });
                                                 cx.notify();
@@ -135,7 +135,7 @@ impl Render for ThreatZoneApp {
                                         }),
                                     ),
                             )
-                            // Button: Select / Drag Mode
+                            // Button: Select / Reshape Mode
                             .child(
                                 div()
                                     .px_3()
@@ -150,7 +150,7 @@ impl Render for ThreatZoneApp {
                                     .text_xs()
                                     .font_weight(gpui::FontWeight::SEMIBOLD)
                                     .cursor_pointer()
-                                    .child("Select / Drag Mode")
+                                    .child("Select / Reshape")
                                     .on_mouse_down(
                                         gpui::MouseButton::Left,
                                         cx.listener({
@@ -200,7 +200,7 @@ impl Render for ThreatZoneApp {
                     .flex_1()
                     .w_full()
                     .bg(rgb(0x090d16))
-                    // Subtle grid background effect
+                    // Central background placeholder
                     .child(
                         div()
                             .absolute()
@@ -212,7 +212,7 @@ impl Render for ThreatZoneApp {
                                 div()
                                     .text_xs()
                                     .text_color(rgb(0x1e293b))
-                                    .child("[ Video Surface / Interactive Overlay Canvas ]"),
+                                    .child("[ Canvas Surface • Interactive 2D Vector Overlay ]"),
                             ),
                     )
                     // The Interactive Vector Canvas Element
@@ -240,7 +240,7 @@ impl Render for ThreatZoneApp {
                                 div()
                                     .text_color(rgb(0x38bdf8))
                                     .child(match mode {
-                                        CanvasMode::Draw => "✎ DRAW MODE: Click to place vertices. Click yellow vertex or Right-Click to close.",
+                                        CanvasMode::Draw => "✎ DRAW MODE: Click to add vertices. Click yellow vertex or Right-Click to close.",
                                         CanvasMode::Select => "⇲ SELECT MODE: Drag any vertex to reshape. Right-Click a vertex to remove it.",
                                         CanvasMode::ViewOnly => "🔒 VIEW ONLY",
                                     }),
@@ -262,14 +262,14 @@ fn main() {
             WindowOptions {
                 window_bounds: Some(WindowBounds::Windowed(bounds)),
                 titlebar: Some(gpui::TitlebarOptions {
-                    title: Some("gpui-canvas • Interactive Vector & Threat Zone Annotation".into()),
+                    title: Some("gpui-canvas • Interactive Polygon & Vector Editor".into()),
                     appears_transparent: false,
                     traffic_light_position: None,
                 }),
                 focus: true,
                 ..Default::default()
             },
-            |_, cx| cx.new(ThreatZoneApp::new),
+            |_, cx| cx.new(PolygonEditorApp::new),
         )
         .unwrap();
 

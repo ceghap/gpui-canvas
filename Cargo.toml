@@ -23,5 +23,5 @@ gpui_platform = { git = "https://github.com/zed-industries/zed", features = ["wa
 gpui_platform = { git = "https://github.com/zed-industries/zed" }
 
 [[example]]
-name = "threat_zones"
-path = "examples/threat_zones.rs"
+name = "polygon_editor"
+path = "examples/polygon_editor.rs"
